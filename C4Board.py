@@ -1,49 +1,61 @@
 class C4Board():
 	
-	def __init__(self,players = 2, lineLength = 4, height = 6, width = 7):
+	def __init__(self, board = None, lineLength = 4, height = 6, width = 7, curPlayer = 1):
 
 		# this board is column major
-		self.board = []
-		for i in range(width):
-			self.board.append([0] * height)
-		
+		if board is None:
+			self.board = []
+			for i in range(width):
+				self.board.append([0] * height)
+		else:
+			self.board = [col[:] for col in board]
+
+		# initialize member variables
 		self.height = height
 		self.width = width
-		self.maxPlayer = players
-		self.currentPlayer = 1
+		self.currentPlayer = curPlayer
 		self.lineLength = lineLength
 
-		self.score_table = []
+		# have a score table to see how good our move is
+		self.scoreTable = []
 		for i in range(self.width):
-			self.score_table.append([0] * self.height)
+			self.scoreTable.append([0] * self.height)
 
 		dx = [-1, -1, -1, 0, 0, 1, 1, 1]
 		dy = [-1, 0, 1, -1, 1, -1, 0, 1]
 		for width in range(self.width):
 			for height in range(self.height):
+				# loop through the 8 directions
 				for i in range(8):
 					if width + dx[i] * (self.lineLength - 1) < 0 or width + dx[i] * (self.lineLength - 1) >= self.width or height + dy[i] * (self.lineLength - 1) < 0 or height + dy[i] * (self.lineLength - 1) >= self.height:
+						# at some point this direction will go out of bounds
 						continue
 					for j in range(self.lineLength - 1):
-						self.score_table[width + j * dx[i]][height + j * dy[i]] += 1 
+						self.scoreTable[width + j * dx[i]][height + j * dy[i]] += 1 
 
 		# "height" of the tokens at the i-th column
-		self.heights = [0] * width
+		self.heights = [0] * self.width
+
+	def __repr__(self):
+		return '\n'.join([','.join([str(tile) for tile in row]) for row in self.board])
 
 	def updatePlayer(self):
 
-		self.currentPlayer+=1
-		if self.currentPlayer > self.maxPlayer:
+		self.currentPlayer += 1
+		if self.currentPlayer > 2:
 			self.currentPlayer = 1
 		
 	def addPiece(self,column,player):
-		
-		if self.heights[column] >= self.height:
+
+		if (not column in range(self.width)) or self.heights[column] >= self.height:
 			print('Invalid insert')
+			return False
 		
 		else:
 			self.board[column][self.heights[column]] = player
 			self.heights[column] += 1
+			self.updatePlayer()
+			return True
 	
 	def findWinner(self):
 		dx = [-1, -1, -1, 0, 0, 1, 1, 1]
@@ -65,24 +77,40 @@ class C4Board():
 		return -1
 	
 	def score(self):
-		init_score = sum([sum(l) for l in self.score_table])
-		scores = [init_score] * self.maxPlayer
+		init_score = sum([sum(l) for l in self.scoreTable])
+		scores = [init_score] * 2
 		for width in range(self.width):
 			for height in range(self.height):
-				for i in range(self.maxPlayer):
+				for i in range(2):
 					if self.board[width][height] == (i + 1):
-						scores[i] += self.score_table[width][height]
+						scores[i] += self.scoreTable[width][height]
 					else:
-						scores[i] -= self.score_table[width][height]
+						scores[i] -= self.scoreTable[width][height]
 		return scores
 	
-	def bestMove(self, player):
+	def bestMove(self):
 		# do implementation here
-		print("NOT DONE YET")
+		# initialize best scores
+		bestMoveScore = [0] * self.width
+		for i in range(self.width):
+			# create a new board and test the moves
+			tmpBoard = C4Board(self.board)
+			tmpBoard.addPiece(i,tmpBoard.currentPlayer)
+
+			if tmpBoard.findWinner == self.currentPlayer:
+				# return a winning move
+				return i
+			else:
+				# store down the current score we get
+				bestMoveScore[i] = tmpBoard.score()[self.currentPlayer - 1]
+		
+		# find the best move of all of them and return it
+		return bestMoveScore.index(max(bestMoveScore))
+
 
 if __name__ == "__main__":
 	a = C4Board()
 	bot_player = input("Is the computer player 1 or player 2?: ")
 	while not (bot_player == "1" or bot_player == "2"):
 		bot_player = input("Invalid input.\nIs the computer player 1 or player 2?: ")
-	bot_player = int(bot_player)
+	print(a.bestMove())
