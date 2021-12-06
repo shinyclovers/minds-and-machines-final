@@ -37,7 +37,7 @@ class C4Board():
 		self.heights = [0] * self.width
 
 	def __repr__(self):
-		return '\n'.join([','.join([str(tile) for tile in row]) for row in self.board])
+		return "Board State:\n" + '\n'.join([','.join([str(self.board[j][self.height - 1 - i]) for j in range(self.width)]) for i in range(self.height)])
 
 	def updatePlayer(self):
 
@@ -45,14 +45,14 @@ class C4Board():
 		if self.currentPlayer > 2:
 			self.currentPlayer = 1
 		
-	def addPiece(self,column,player):
+	def addPiece(self,column):
 
 		if (not column in range(self.width)) or self.heights[column] >= self.height:
 			print('Invalid insert')
 			return False
 		
 		else:
-			self.board[column][self.heights[column]] = player
+			self.board[column][self.heights[column]] = self.currentPlayer
 			self.heights[column] += 1
 			self.updatePlayer()
 			return True
@@ -95,8 +95,7 @@ class C4Board():
 		for i in range(self.width):
 			# create a new board and test the moves
 			tmpBoard = C4Board(self.board)
-			tmpBoard.addPiece(i,tmpBoard.currentPlayer)
-
+			tmpBoard.addPiece(i)
 			if tmpBoard.findWinner == self.currentPlayer:
 				# return a winning move
 				return i
@@ -113,4 +112,15 @@ if __name__ == "__main__":
 	bot_player = input("Is the computer player 1 or player 2?: ")
 	while not (bot_player == "1" or bot_player == "2"):
 		bot_player = input("Invalid input.\nIs the computer player 1 or player 2?: ")
-	print(a.bestMove())
+	bot_player = int(bot_player)
+
+	while a.findWinner() == -1:
+		print(a)
+		print()
+		if bot_player == a.currentPlayer:
+			res = a.bestMove()
+			print('Bot plays column {}'.format(res))
+			a.addPiece(res)
+		else:
+			col = int(input("Which column do you want to insert the tile in: "))
+			a.addPiece(col)
