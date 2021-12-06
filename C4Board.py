@@ -1,14 +1,19 @@
+
 class C4Board():
 	
-	def __init__(self, board = None, lineLength = 4, height = 6, width = 7, curPlayer = 1):
+	def __init__(self, board = None, heights = None,lineLength = 4, height = 6, width = 7, curPlayer = 1):
 
 		# this board is column major
 		if board is None:
 			self.board = []
 			for i in range(width):
 				self.board.append([0] * height)
+			
+			# "height" of the tokens at the i-th column
+			self.heights = [0] * width
 		else:
 			self.board = [col[:] for col in board]
+			self.heights = heights[:]
 
 		# initialize member variables
 		self.height = height
@@ -33,8 +38,6 @@ class C4Board():
 					for j in range(self.lineLength - 1):
 						self.scoreTable[width + j * dx[i]][height + j * dy[i]] += 1 
 
-		# "height" of the tokens at the i-th column
-		self.heights = [0] * self.width
 
 	def __repr__(self):
 		return "Board State:\n" + '\n'.join([','.join([str(self.board[j][self.height - 1 - i]) for j in range(self.width)]) for i in range(self.height)])
@@ -68,9 +71,9 @@ class C4Board():
 				for i in range(8):
 					line_success = True
 					if width + dx[i] * (self.lineLength - 1) < 0 or width + dx[i] * (self.lineLength - 1) >= self.width or height + dy[i] * (self.lineLength - 1) < 0 or height + dy[i] * (self.lineLength - 1) >= self.height:
-						continue
-					for j in range(self.lineLength - 1):
-						if self.board[width + j * dx[i]][height + j * dy[i]] == self.board[width][height]:
+						continue 
+					for j in range(self.lineLength):
+						if not self.board[width + j * dx[i]][height + j * dy[i]] == self.board[width][height]:
 							line_success = False
 					if line_success:
 						return self.board[width][height]
@@ -94,8 +97,11 @@ class C4Board():
 		bestMoveScore = [0] * self.width
 		for i in range(self.width):
 			# create a new board and test the moves
-			tmpBoard = C4Board(self.board)
-			tmpBoard.addPiece(i)
+			tmpBoard = C4Board(self.board,self.heights)
+			print(tmpBoard.addPiece(i))
+			if not tmpBoard.addPiece(i):
+				continue
+			# tmpBoard.addPiece(i)
 			if tmpBoard.findWinner == self.currentPlayer:
 				# return a winning move
 				return i
@@ -124,3 +130,5 @@ if __name__ == "__main__":
 		else:
 			col = int(input("Which column do you want to insert the tile in: "))
 			a.addPiece(col)
+	# print(a)
+	print(a,'\n\nPlayer {} won!'.format(a.findWinner()))

@@ -88,7 +88,7 @@ def getBoardState():
             boardList.append(sorted(appendList,reverse=True))
         return boardList
 def selectcol(num):
-    driver.find_element(By.XPATH,'//table/tr/td[{}]/div'.format(num)).click()
+    driver.find_element(By.XPATH,'//table/tr[-1]/td[{}]'.format(num)).click()
 def isBrowserAlive():
    try:
       driver.current_url
@@ -103,3 +103,4 @@ while not gameOver:
     # print('still checking')
     print(getBoardState())
     checkGameState()
+    selectcol(4)
