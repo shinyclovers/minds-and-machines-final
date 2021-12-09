@@ -120,14 +120,14 @@ class C4Board():
 		# find the best move of all of them and return it
 		return bestMoveScore.index(max(bestMoveScore))
 
-	def bestMoveBruteForce(self, depth = 5, best = -2147483648, worst = 2147483647, maximizing = True):
+	def bestMoveBruteForce(self, player, depth = 5, best = -2147483648, worst = 2147483647, maximizing = True):
 		
 		# base cases
 		if depth == 0:
-			return (-1, self.score()[self.currentPlayer - 1])
+			return (-1, self.score()[player - 1])
 		
 		if not self.findWinner() == -1:
-			if self.findWinner() == self.currentPlayer:
+			if self.findWinner() == player:
 				return (-1, 1000)
 			else:
 				return (-1, -1000)
@@ -138,7 +138,7 @@ class C4Board():
 			for i in range(self.width):
 				tmp_board = C4Board(self.board)
 				if tmp_board.addPiece(i):
-					bf_score = tmp_board.bestMoveBruteForce(depth - 1, best, worst, False)[1]
+					bf_score = tmp_board.bestMoveBruteForce(player, depth - 1, best, worst, False)[1]
 					if bf_score > val:
 						val = bf_score
 						best_move = i
@@ -152,7 +152,7 @@ class C4Board():
 			for i in range(self.width):
 				tmp_board = C4Board(self.board)
 				if tmp_board.addPiece(i):
-					bf_score = tmp_board.bestMoveBruteForce(depth - 1, best, worst, True)[1]
+					bf_score = tmp_board.bestMoveBruteForce(player, depth - 1, best, worst, True)[1]
 					if bf_score < val:
 						val = bf_score
 						best_move = i
@@ -173,16 +173,16 @@ if __name__ == "__main__":
 		print(a)
 		print()
 		if bot_player == a.currentPlayer:
-			res = a.bestMoveBruteForce()[0]
+			res = a.bestMoveBruteForce(bot_player)[0]
 			if res == -1:
 				print('Bot surrenders')
 				break
-			print('Bot plays column {}'.format(res + 1))
+			print('Bot plays column {}'.format(res))
 			a.addPiece(res)
 		else:
 			ok = False
 			while not ok:
-				col = int(input("Which column do you want to insert the tile in: ")) - 1
+				col = int(input("Which column do you want to insert the tile in: "))
 				if not a.addPiece(col):
 					print("Invalid insert")
 				else:
